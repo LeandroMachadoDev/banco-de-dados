@@ -1,0 +1,102 @@
+CREATE DATABASE "Projeto Estacio Financeiro"
+    WITH
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LOCALE_PROVIDER = 'libc'
+    CONNECTION LIMIT = -1
+    IS_TEMPLATE = False;
+
+CREATE TABLE contas (
+    id_conta SERIAL PRIMARY KEY,
+    nome_conta VARCHAR(30) NOT NULL,
+    valor_conta DECIMAL(10,2) NOT NULL,
+    mes_ano_conta VARCHAR(10) NOT NULL,
+    detalhe TEXT
+);
+
+CREATE TABLE investimentos (
+    id_investimento SERIAL PRIMARY KEY,
+    objetivo VARCHAR(30) NOT NULL,
+    valor_investimento DECIMAL(10,2) NOT NULL,
+    prazo_em_meses smallint NOT NULL
+);
+
+CREATE TABLE saldos (
+    id_saldo SERIAL PRIMARY KEY,
+    mes_ano_saldo VARCHAR(10) NOT NULL,
+    valor_saldo DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE orcamentos (
+    id_orcamento SERIAL PRIMARY KEY,
+    mes_ano_orcamento VARCHAR(10) NOT NULL,
+    valor_total DECIMAL(10,2) DEFAULT 0,
+    id_conta INTEGER REFERENCES contas(id_conta),
+    id_investimento INTEGER REFERENCES investimentos(id_investimento),
+    id_saldo INTEGER REFERENCES saldos(id_saldo)
+);
+
+INSERT INTO contas values
+(default, 'Aluguel', 950, '10/2024',''),
+(default, 'Energia', 417.50, '10/2024',''),
+(default, 'Água', 100, '10/2024',''),
+(default, 'Internet', 100, '10/2024','Vencimento dia 15'),
+(default, 'Compras', 900, '10/2024','Alimentos'),
+(default, 'Compras', 500, '10/2024','shopee'),
+(default, 'Aluguel', 950, '11/2024',''),
+(default, 'Energia', 360.50, '11/2024',''),
+(default, 'Água', 100, '11/2024',''),
+(default, 'Internet', 100, '11/2024','Vencimento dia 15'),
+(default, 'Compras', 900, '11/2024','Alimentos'),
+(default, 'Compras', 500, '11/2024','Roupas'),
+(default, 'Academia', 150, '11/2024','')
+
+INSERT INTO orcamentos values
+(default, '10/2024', 2967.50),
+(default, '11/2024', 3060.50),
+(default, '12/2024', 0);
+
+INSERT INTO investimentos values
+(default, 'Comprar casa', 800, 48),
+(default, 'Comprar carro', 600, 36),
+(default, 'Viajar', 500, 24)
+
+INSERT INTO saldos values
+(default, '10/2024', 4800),
+(default, '11/2024', 5200),
+(default, '12/2024', 5000);
+
+
+
+
+SELECT * FROM contas WHERE mes_ano_conta = '10/2024';
+
+SELECT nome_conta, valor_conta
+FROM contas
+WHERE valor_conta = (SELECT MAX(valor_conta) FROM contas);
+
+SELECT
+    mes_ano_conta,
+    SUM(valor_conta) AS total_por_mes_ano
+FROM
+    contas
+GROUP BY
+    mes_ano_conta;
+
+
+SELECT
+    SUM(valor_conta) AS total_outubro_2024
+FROM
+    contas
+WHERE
+    mes_ano_conta = '10/2024';
+
+
+SELECT
+    s.mes_ano_saldo,
+    s.valor_saldo,
+    o.valor_total,
+    s.valor_saldo - o.valor_total AS diferenca
+FROM
+    saldos s
+INNER JOIN orcamentos o ON s.mes_ano_saldo = o.mes_ano_orcamento;
